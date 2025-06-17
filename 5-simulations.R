@@ -1,0 +1,92 @@
+#devtools::install_github("santosneto/BPmodel")
+library(gamlss)
+library(BPmodel)
+set.seed(261298)
+ns=rep(c(15,20,30,40),each=1,len=108)
+phis=rep(c(3,15,30),each=4,len=108)
+ps=rep(c(3,4,5),each=12,len=108)
+qs=rep(c(1,2,3),each=36,len=108)
+A=cbind(ns,phis,ps,qs)
+r=10000
+
+stat=matrix(rep(0,7*r),nrow=r)
+replications=function(x){
+  n=x[1]
+  phi=x[2]
+  p=x[3]
+  q=x[4]
+  for(i in 1:r){
+    x1=runif(n)
+    x2=runif(n)
+    x3=runif(n)
+    if(p==3){
+      f1=formula(y~x1+x2+x3)
+      if(q==1){
+        y=rBP(n,mu=exp(1+x1+x2),sigma=phi)
+        f2=formula(y~x1+x2)
+      }
+      if(q==2){
+        y=rBP(n,mu=exp(1+x1),sigma=phi)
+        f2=formula(y~x1)
+      }
+      if(q==3){
+        y=rBP(n,mu=exp(1),sigma=phi)
+        f2=formula(y~1)
+      }
+    }
+    if(p==4){
+      x4=runif(n)
+      f1=formula(y~x1+x2+x3+x4)
+      if(q==1){
+        y=rBP(n,mu=exp(1+x1+x2+x3),sigma=phi)
+        f2=formula(y~x1+x2+x3)
+      }
+      if(q==2){
+        y=rBP(n,mu=exp(1+x1+x2),sigma=phi)
+        f2=formula(y~x1+x2)
+      }
+      if(q==3){
+        y=rBP(n,mu=exp(1+x1),sigma=phi)
+        f2=formula(y~1+x1)
+      }
+    }
+    if(p==5){
+      x4=runif(n)
+      x5=runif(n)
+      f1=formula(y~x1+x2+x3+x4+x5)
+      if(q==1){
+        y=rBP(n,mu=exp(1+x1+x2+x3+x4),sigma=phi)
+        f2=formula(y~x1+x2+x3+x4)
+      }
+      if(q==2){
+        y=rBP(n,mu=exp(1+x1+x2+x3),sigma=phi)
+        f2=formula(y~x1+x2+x3)
+      }
+      if(q==3){
+        y=rBP(n,mu=exp(1+x1+x2),sigma=phi)
+        f2=formula(y~1+x1+x2)
+      }
+    }
+    
+    ajuste1=tryCatch(gamlss(f1,
+                            #sigma.formula = ~x1+x2,
+                            family=BP(mu.link="log",
+                                      sigma.link="log"),
+                            control=gamlss.control(trace=F)),
+                     error=function(e){NA})
+    ajuste2=tryCatch(gamlss(f2,
+                            #sigma.formula = ~x1,
+                            family=BP(mu.link="log",
+                                      sigma.link="log"),
+                            control=gamlss.control(trace=F)),
+                     error=function(e){NA})
+    bb=tryCatch(correcao(ajuste1,ajuste2),
+                error=function(e){rep(NA,7)})
+    stat[i,]=bb
+  }
+  file = paste(paste("sim_bp",n, phi, p, q, sep="_"),
+                  ".csv",sep="")
+  write.table(stat, file=file)
+  print(file)
+}
+apply(A,1,replications)

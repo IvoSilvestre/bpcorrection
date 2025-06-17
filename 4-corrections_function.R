@@ -1,0 +1,21 @@
+corrections=function(model1,model2){
+  X1=cbind(model1$mu.x,model1$sigma.x)
+  X2=cbind(model2$mu.x,model2$sigma.x)
+  ek1=tryCatch(ek(model1),error=function(e){NA})
+  ek2=tryCatch(ek(model2),error=function(e){NA})
+  q=ncol(X1)-ncol(X2)
+  eps=tryCatch(skovgaard(model1,model2),error=function(e){NA})
+  LR=abs(model1$G.deviance-model2$G.deviance)
+  B=tryCatch((ek1-ek2)/q,error=function(e){NA})
+  LRb1=tryCatch(LR/(1+B),error=function(e){NA})
+  LRb2=tryCatch(LR*exp(-B),error=function(e){NA})
+  LRb3=tryCatch(LR*(1-B),error=function(e){NA})
+  LRsk1=tryCatch(LR-2*log(eps),error=function(e){NA})
+  LRsk2=tryCatch(LR*(1-1/LR*log(eps))^2,error=function(e){NA})
+  LRbbar=tryCatch(bootstrap(model1,model2),error=function(e){NA})
+  LRboot=tryCatch(LR*q/LRbbar,error=function(e){NA})
+  stat=matrix(c(LR,LRb1,LRb2,LRb3,LRboot,LRsk1,LRsk2),
+              nrow=1,byrow=T)
+  return(stat)
+}
+
