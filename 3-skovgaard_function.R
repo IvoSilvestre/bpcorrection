@@ -112,7 +112,7 @@ skovgaard=function(model1,model2){
              -j(1,1,mu2,phi2)
            )))
   up=c(t(X)%*%PHIhat%*%D1hat%*%(V1%*%(MUhat%*%PHIhat-MUtilde%*%PHItilde)+C%*%(PHIhat-PHItilde))%*%rep(1,n),
-       t(Z)%*%D2hat%*%((V1%*%MUhat+C)%*%(MUhat%*%PHIhat-MUtilde%*%PHItilde)+(C%*%MUhat+V2-C)%*%(PHIhat-PHItilde))%*%rep(1,n))
+       t(Z)%*%D2hat%*%((V1%*%MUhat+C)%*%(MUhat%*%PHIhat-MUtilde%*%PHItilde)+(C%*%MUhat+V2)%*%(PHIhat-PHItilde))%*%rep(1,n))
   LR=abs(model1$G.dev-model2$G.dev)
   epsa=sqrt(abs(det(Ktilde)*det(Khat)*det(J11)))
   epsb=(abs(det(UP))*sqrt(abs(det(as.matrix((Ktilde%*%solve(UP)%*%Jhat%*%K_1hat%*%UP)[!c(labelsx1%in%labelsx2,labelsz1%in%labelsz2),!c(labelsx1%in%labelsx2,labelsz1%in%labelsz2)])))))
